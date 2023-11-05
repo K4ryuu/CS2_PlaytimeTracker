@@ -1,0 +1,15 @@
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/K4ryuuPlaytimeTracker.deps.json
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/K4ryuuPlaytimeTracker.dll
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/K4ryuuPlaytimeTracker.pdb
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/CounterStrikeSharp.API.dll
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/Newtonsoft.Json.dll
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.csproj.AssemblyReference.cache
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.AssemblyInfoInputs.cache
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.AssemblyInfo.cs
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.csproj.CoreCompileInputs.cache
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.csproj.CopyComplete
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.dll
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/refint/K4ryuuPlaytimeTracker.dll
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/K4ryuuPlaytimeTracker.pdb
+/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/Release/net7.0/ref/K4ryuuPlaytimeTracker.dll

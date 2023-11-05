@@ -1,0 +1,142 @@
+{
+  "version": 3,
+  "targets": {
+    "net7.0": {
+      "MySqlConnector/2.2.7": {
+        "type": "package",
+        "compile": {
+          "lib/net7.0/MySqlConnector.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/MySqlConnector.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Nexd.MySQL/1.0.0": {
+        "type": "package",
+        "dependencies": {
+          "MySqlConnector": "2.2.7"
+        },
+        "compile": {
+          "lib/net7.0/Nexd.MySQL.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/Nexd.MySQL.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "MySqlConnector/2.2.7": {
+      "sha512": "rwFa71MlOJ142S+BXDvtLRdAIn7l6PTNWu+Xehs2qRehK8dckjKqwvK8azEADCMkQyXS1LXgh9HkSvItpTi6WA==",
+      "type": "package",
+      "path": "mysqlconnector/2.2.7",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net461/MySqlConnector.dll",
+        "lib/net461/MySqlConnector.xml",
+        "lib/net471/MySqlConnector.dll",
+        "lib/net471/MySqlConnector.xml",
+        "lib/net6.0/MySqlConnector.dll",
+        "lib/net6.0/MySqlConnector.xml",
+        "lib/net7.0/MySqlConnector.dll",
+        "lib/net7.0/MySqlConnector.xml",
+        "lib/netcoreapp3.1/MySqlConnector.dll",
+        "lib/netcoreapp3.1/MySqlConnector.xml",
+        "lib/netstandard2.0/MySqlConnector.dll",
+        "lib/netstandard2.0/MySqlConnector.xml",
+        "lib/netstandard2.1/MySqlConnector.dll",
+        "lib/netstandard2.1/MySqlConnector.xml",
+        "logo.png",
+        "mysqlconnector.2.2.7.nupkg.sha512",
+        "mysqlconnector.nuspec"
+      ]
+    },
+    "Nexd.MySQL/1.0.0": {
+      "sha512": "BSs1QIMCJNmYJQbNQASOGtgvOaa9y/wVyF9cZdY8j8zaN9sreaS5454lfovqLEtdCJjhQVSls22w6U6xoxL3eg==",
+      "type": "package",
+      "path": "nexd.mysql/1.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.txt",
+        "README.md",
+        "lib/net7.0/Nexd.MySQL.dll",
+        "nexd.mysql.1.0.0.nupkg.sha512",
+        "nexd.mysql.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net7.0": [
+      "Nexd.MySQL >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/Users/sples/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/K4ryuuPlaytimeTracker.csproj",
+      "projectName": "K4ryuuPlaytimeTracker",
+      "projectPath": "/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/K4ryuuPlaytimeTracker.csproj",
+      "packagesPath": "/Users/sples/.nuget/packages/",
+      "outputPath": "/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/Users/sples/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net7.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net7.0": {
+        "targetAlias": "net7.0",
+        "dependencies": {
+          "Nexd.MySQL": {
+            "target": "Package",
+            "version": "[1.0.0, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.403/RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

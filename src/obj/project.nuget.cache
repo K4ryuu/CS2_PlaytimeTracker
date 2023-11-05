@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "BBXRkMPndkFYazahUhExR6h9JRZ94J+bwNBTHAVrDMwL5kYWtRQ6C4yj+2k0qTghHA9BzGwtHI6QUt6JD17eXA==",
+  "success": true,
+  "projectFilePath": "/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/K4ryuuPlaytimeTracker.csproj",
+  "expectedPackageFiles": [
+    "/Users/sples/.nuget/packages/mysqlconnector/2.2.7/mysqlconnector.2.2.7.nupkg.sha512",
+    "/Users/sples/.nuget/packages/nexd.mysql/1.0.0/nexd.mysql.1.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
