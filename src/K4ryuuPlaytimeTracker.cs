@@ -43,8 +43,6 @@ namespace K4ryuuPlaytimePlugin
 
 			MySqlQueryResult result = MySql!.Table("player_stats").Where($"steamid = '{player.SteamID}'").Select();
 
-			player.PrintToChat($"{player.PlayerName} ({player.SteamID})");
-
 			if (result.Rows > 0)
 			{
 				Utilities.ReplyToCommand(player, $" {CFG.config.ChatPrefix} {ChatColors.LightRed}{player.PlayerName}'s Playtime Statistics:");
