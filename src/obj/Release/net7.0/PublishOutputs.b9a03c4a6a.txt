@@ -1,7 +1,0 @@
-/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/publish/K4ryuuPlaytimeTracker.dll
-/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/publish/K4ryuuPlaytimeTracker.deps.json
-/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/publish/K4ryuuPlaytimeTracker.pdb
-/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/publish/MySqlConnector.dll
-/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/publish/Nexd.MySQL.dll
-/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/publish/CounterStrikeSharp.API.dll
-/Users/sples/Documents/GitHub/CS2_PlaytimeTracker/src/bin/Release/net7.0/publish/Newtonsoft.Json.dll
