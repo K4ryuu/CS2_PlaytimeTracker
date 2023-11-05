@@ -34,20 +34,24 @@ namespace K4ryuuPlaytimePlugin
 		[ConsoleCommand("playtime", "Check the current playtime")]
 		[ConsoleCommand("time", "Check the current playtime")]
 		[ConsoleCommand("mytime", "Check the current playtime")]
-		public async void OnCommandCheckPlaytime(CCSPlayerController? player, CommandInfo command)
+		public void OnCommandCheckPlaytime(CCSPlayerController? player, CommandInfo command)
 		{
 			if (player == null || !player.IsValid)
 				return;
 
-			MySqlQueryResult result = await MySql!.Table("player_stats").Where($"steamid = '{player.SteamID}'").SelectAsync();
+			SaveClientTime(player);
+
+			MySqlQueryResult result = MySql!.Table("player_stats").Where($"steamid = '{player.SteamID}'").Select();
+
+			player.PrintToChat($"{player.PlayerName} ({player.SteamID})");
 
 			if (result.Rows > 0)
 			{
-				Utilities.ReplyToCommand(player, $" {CFG.config.ChatPrefix} {ChatColors.LightRed}{player.PlayerName}{ChatColors.Gold}'s Playtime Statistics:");
-				Utilities.ReplyToCommand(player, $" {ChatColors.Gold}Total: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "all"))}");
-				Utilities.ReplyToCommand(player, $" {ChatColors.Gold}CT: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "ct"))}{ChatColors.Gold} | T: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "t"))}");
-				Utilities.ReplyToCommand(player, $" {ChatColors.Gold}Spectator: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "spec"))}");
-				Utilities.ReplyToCommand(player, $" {ChatColors.Gold}Alive: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "alive"))}{ChatColors.Gold} | Dead: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "dead"))}");
+				Utilities.ReplyToCommand(player, $" {CFG.config.ChatPrefix} {ChatColors.LightRed}{player.PlayerName}'s Playtime Statistics:");
+				Utilities.ReplyToCommand(player, $" {ChatColors.Blue}Total: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "all"))}");
+				Utilities.ReplyToCommand(player, $" {ChatColors.Blue}CT: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "ct"))} {ChatColors.Blue}| T: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "t"))}");
+				Utilities.ReplyToCommand(player, $" {ChatColors.Blue}Spectator: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "spec"))}");
+				Utilities.ReplyToCommand(player, $" {ChatColors.Blue}Alive: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "alive"))} {ChatColors.Blue}| Dead: {ChatColors.LightRed}{FormatPlaytime(result.Get<int>(0, "dead"))}");
 			}
 			else Utilities.ReplyToCommand(player, $" {CFG.config.ChatPrefix} {ChatColors.LightRed}We don't have your playtime data at the moment. Please check again later!");
 		}
@@ -62,7 +66,7 @@ namespace K4ryuuPlaytimePlugin
 
 			InsertNewClient(player);
 
-			uint playerIndex = player.PlayerPawn.Value.EntityIndex!.Value.Value;
+			uint playerIndex = (uint)player.UserId!;
 
 			if (clientTime[playerIndex] == null)
 				clientTime[playerIndex] = new Dictionary<string, DateTime>();
@@ -89,9 +93,21 @@ namespace K4ryuuPlaytimePlugin
 		public HookResult OnClientSpawn(EventPlayerSpawn @event, GameEventInfo info)
 		{
 			CCSPlayerController player = @event.Userid;
-			if (!player.IsValid || player.IsBot) return HookResult.Continue;
+			if (!player.IsValid || player.IsBot)
+				return HookResult.Continue;
 
-			UpdatePlayerData(player, "dead", (DateTime.UtcNow - clientTime[player.PlayerPawn.Value.EntityIndex!.Value.Value]["Death"]).TotalSeconds);
+			if (!clientTime.TryGetValue((uint)player.UserId!, out var playerData) || playerData == null)
+			{
+				clientTime[(uint)player.UserId!] = new Dictionary<string, DateTime>();
+				playerData = clientTime[(uint)player.UserId!];
+			}
+
+			if (playerData.ContainsKey("Death"))
+			{
+				UpdatePlayerData(player, "dead", (DateTime.UtcNow - playerData["Death"]).TotalSeconds);
+			}
+			else clientTime[(uint)player.UserId!]["Death"] = DateTime.UtcNow;
+
 			return HookResult.Continue;
 		}
 
@@ -99,9 +115,10 @@ namespace K4ryuuPlaytimePlugin
 		public HookResult OnClientDeath(EventPlayerDeath @event, GameEventInfo info)
 		{
 			CCSPlayerController player = @event.Userid;
-			if (!player.IsValid || player.IsBot) return HookResult.Continue;
+			if (!player.IsValid || player.IsBot)
+				return HookResult.Continue;
 
-			UpdatePlayerData(player, "alive", (DateTime.UtcNow - clientTime[player.PlayerPawn.Value.EntityIndex!.Value.Value]["Death"]).TotalSeconds);
+			UpdatePlayerData(player, "alive", (DateTime.UtcNow - clientTime[(uint)player.UserId!]["Death"]).TotalSeconds);
 			return HookResult.Continue;
 		}
 
@@ -112,9 +129,7 @@ namespace K4ryuuPlaytimePlugin
 			if (!player.IsValid || player.IsBot || @event.Oldteam == @event.Team) return HookResult.Continue;
 
 			DateTime now = DateTime.UtcNow;
-			uint playerIndex = player.PlayerPawn.Value.EntityIndex!.Value.Value;
-
-			double seconds = (clientTime[playerIndex]["Team"] - now).TotalSeconds;
+			double seconds = (now - clientTime[(uint)player.UserId!]["Team"]).TotalSeconds;
 
 			UpdatePlayerData(player, GetFieldForTeam((CsTeam)@event.Oldteam), seconds);
 
@@ -132,46 +147,41 @@ namespace K4ryuuPlaytimePlugin
 		public void SaveClientTime(CCSPlayerController player)
 		{
 			DateTime now = DateTime.UtcNow;
-			uint playerIndex = player.PlayerPawn.Value.EntityIndex!.Value.Value;
 
-			MySqlQueryValue values = new MySqlQueryValue()
-						.Add("all", $"`all` + {(clientTime[playerIndex]["Connect"] - now).TotalSeconds}");
+			MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `all` = `all` + {(int)Math.Round((now - clientTime[(uint)player.UserId!]["Connect"]).TotalSeconds)};");
 
-			double teamSeconds = (clientTime[playerIndex]["Team"] - now).TotalSeconds;
+			int teamSeconds = (int)Math.Round((now - clientTime[(uint)player.UserId!]["Team"]).TotalSeconds);
 			switch ((CsTeam)player.TeamNum)
 			{
 				case CsTeam.Terrorist:
 					{
-						values.Add("t", $"`t` + {teamSeconds}");
+						MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `t` = `t` + {teamSeconds};");
 						break;
 					}
 				case CsTeam.CounterTerrorist:
 					{
-						values.Add("ct", $"`ct` + {teamSeconds}");
+						MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `ct` = `ct` + {teamSeconds};");
 						break;
 					}
 				case CsTeam.Spectator:
 					{
-						values.Add("spec", $"`spec` + {teamSeconds}");
+						MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `spec` = `spec` + {teamSeconds};");
 						break;
 					}
 			}
 
 			string field = player.PawnIsAlive ? "alive" : "dead";
-			values.Add(field, $"`{field}` + {(clientTime[playerIndex]["Death"] - now).TotalSeconds}");
+			MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `{field}` = `{field}` + {(int)Math.Round((now - clientTime[(uint)player.UserId!]["Death"]).TotalSeconds)};");
 
-			MySql!.Table("player_stats").Where($"steamid = '{player.SteamID}'").UpdateAsync(values);
+			clientTime[(uint)player.UserId!]["Team"] = now;
+			clientTime[(uint)player.UserId!]["Death"] = now;
+			clientTime[(uint)player.UserId!]["Connect"] = now;
 		}
 
 		private void UpdatePlayerData(CCSPlayerController player, string field, double value)
 		{
-			uint playerIndex = player.PlayerPawn.Value.EntityIndex!.Value.Value;
-			DateTime now = DateTime.UtcNow;
-
-			MySqlQueryValue values = new MySqlQueryValue().Add(field, $"`{field}` + {value}");
-
-			MySql!.Table("player_stats").Where($"steamid = '{player.SteamID}'").UpdateAsync(values);
-			clientTime[playerIndex][field] = now;
+			MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `{field}` = `{field}` + {(int)Math.Round(value)};");
+			clientTime[(uint)player.UserId!][field] = DateTime.UtcNow;
 		}
 
 		static string FormatPlaytime(int totalSeconds)
@@ -181,12 +191,20 @@ namespace K4ryuuPlaytimePlugin
 
 			StringBuilder formattedTime = new StringBuilder();
 
+			bool addedValue = false;
+
 			for (int i = 0; i < units.Length; i++)
 			{
 				if (values[i] > 0)
 				{
 					formattedTime.Append($"{values[i]}{units[i]}, ");
+					addedValue = true;
 				}
+			}
+
+			if (!addedValue)
+			{
+				formattedTime.Append("0s");
 			}
 
 			return formattedTime.ToString().TrimEnd(' ', ',');
