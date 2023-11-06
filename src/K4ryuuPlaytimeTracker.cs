@@ -59,7 +59,7 @@ namespace K4ryuuPlaytimePlugin
 		{
 			CCSPlayerController player = @event.Userid;
 
-			if (!player.IsValid || player.IsBot)
+			if (player == null || !player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
 			InsertNewClient(player);
@@ -79,7 +79,7 @@ namespace K4ryuuPlaytimePlugin
 		{
 			CCSPlayerController player = @event.Userid;
 
-			if (!player.IsValid || player.IsBot)
+			if (player == null || !player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
 			SaveClientTime(player);
@@ -91,7 +91,7 @@ namespace K4ryuuPlaytimePlugin
 		public HookResult OnClientSpawn(EventPlayerSpawn @event, GameEventInfo info)
 		{
 			CCSPlayerController player = @event.Userid;
-			if (!player.IsValid || player.IsBot)
+			if (player == null || !player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
 			if (clientTime.TryGetValue((uint)player.UserId!, out var playerData) && playerData != null && playerData.ContainsKey("Death"))
@@ -111,7 +111,7 @@ namespace K4ryuuPlaytimePlugin
 		public HookResult OnClientDeath(EventPlayerDeath @event, GameEventInfo info)
 		{
 			CCSPlayerController player = @event.Userid;
-			if (!player.IsValid || player.IsBot)
+			if (player == null || !player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
 			if (clientTime.TryGetValue((uint)player.UserId!, out var playerData) && playerData != null && playerData.ContainsKey("Death"))
@@ -131,7 +131,8 @@ namespace K4ryuuPlaytimePlugin
 		public HookResult OnClientTeam(EventPlayerTeam @event, GameEventInfo info)
 		{
 			CCSPlayerController player = @event.Userid;
-			if (!player.IsValid || player.IsBot || @event.Oldteam == @event.Team) return HookResult.Continue;
+			if (player == null || !player.IsValid || player.IsBot || @event.Oldteam == @event.Team)
+				return HookResult.Continue;
 
 			DateTime now = DateTime.UtcNow;
 			double seconds = (now - clientTime[(uint)player.UserId!]["Team"]).TotalSeconds;
