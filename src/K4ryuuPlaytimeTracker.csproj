@@ -6,12 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CounterStrikeSharp.API">
-      <HintPath>..\..\GlobalUsage\CounterStrikeSharp.API.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\GlobalUsage\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <PackageReference Include="Nexd.MySQL" Version="1.0.0" />
+    <Reference Include="CounterStrikeSharp.API" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Nexd.MySQL" Version="1.0.1" />
   </ItemGroup>
 </Project>
