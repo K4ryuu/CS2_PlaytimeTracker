@@ -94,17 +94,15 @@ namespace K4ryuuPlaytimePlugin
 			if (!player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
-			if (!clientTime.TryGetValue((uint)player.UserId!, out var playerData) || playerData == null)
-			{
-				clientTime[(uint)player.UserId!] = new Dictionary<string, DateTime>();
-				playerData = clientTime[(uint)player.UserId!];
-			}
-
-			if (playerData.ContainsKey("Death"))
+			if (clientTime.TryGetValue((uint)player.UserId!, out var playerData) && playerData != null && playerData.ContainsKey("Death"))
 			{
 				UpdatePlayerData(player, "dead", (DateTime.UtcNow - playerData["Death"]).TotalSeconds);
 			}
-			else clientTime[(uint)player.UserId!]["Death"] = DateTime.UtcNow;
+
+			if (clientTime[(uint)player.UserId!] == null)
+				clientTime[(uint)player.UserId!] = new Dictionary<string, DateTime>();
+
+			clientTime[(uint)player.UserId!]["Death"] = DateTime.UtcNow;
 
 			return HookResult.Continue;
 		}
@@ -116,7 +114,16 @@ namespace K4ryuuPlaytimePlugin
 			if (!player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
-			UpdatePlayerData(player, "alive", (DateTime.UtcNow - clientTime[(uint)player.UserId!]["Death"]).TotalSeconds);
+			if (clientTime.TryGetValue((uint)player.UserId!, out var playerData) && playerData != null && playerData.ContainsKey("Death"))
+			{
+				UpdatePlayerData(player, "alive", (DateTime.UtcNow - playerData["Death"]).TotalSeconds);
+			}
+
+			if (clientTime[(uint)player.UserId!] == null)
+				clientTime[(uint)player.UserId!] = new Dictionary<string, DateTime>();
+
+			clientTime[(uint)player.UserId!]["Death"] = DateTime.UtcNow;
+
 			return HookResult.Continue;
 		}
 
@@ -130,6 +137,8 @@ namespace K4ryuuPlaytimePlugin
 			double seconds = (now - clientTime[(uint)player.UserId!]["Team"]).TotalSeconds;
 
 			UpdatePlayerData(player, GetFieldForTeam((CsTeam)@event.Oldteam), seconds);
+
+			clientTime[(uint)player.UserId!]["Team"] = now;
 
 			return HookResult.Continue;
 		}
@@ -179,7 +188,6 @@ namespace K4ryuuPlaytimePlugin
 		private void UpdatePlayerData(CCSPlayerController player, string field, double value)
 		{
 			MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `{field}` = `{field}` + {(int)Math.Round(value)};");
-			clientTime[(uint)player.UserId!][field] = DateTime.UtcNow;
 		}
 
 		static string FormatPlaytime(int totalSeconds)
