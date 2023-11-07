@@ -158,21 +158,22 @@ namespace K4ryuuPlaytimePlugin
 		}
 		public void SaveClientTime(CCSPlayerController player)
 		{
+			DateTime now = DateTime.UtcNow;
+
 			if (!clientTime.ContainsKey(player.SteamID))
 			{
 				// Handle the case where the key doesn't exist by adding a new entry with default values.
 				clientTime[player.SteamID] = new Dictionary<string, DateTime>();
-				clientTime[player.SteamID]["Connect"] = DateTime.UtcNow;
-				clientTime[player.SteamID]["Team"] = DateTime.UtcNow;
-				clientTime[player.SteamID]["Death"] = DateTime.UtcNow;
+				clientTime[player.SteamID]["Connect"] = now;
+				clientTime[player.SteamID]["Team"] = now;
+				clientTime[player.SteamID]["Death"] = now;
 
 				// Return early after handling the case.
 				return;
 			}
 
-			DateTime now = DateTime.UtcNow;
-
 			int allSeconds = (int)Math.Round((now - clientTime[player.SteamID]["Connect"]).TotalSeconds);
+			int teamSeconds = (int)Math.Round((now - clientTime[player.SteamID]["Team"]).TotalSeconds);
 
 			string updateQuery = $@"UPDATE `player_stats`
                            SET `all` = `all` + {allSeconds}";
@@ -181,17 +182,17 @@ namespace K4ryuuPlaytimePlugin
 			{
 				case CsTeam.Terrorist:
 					{
-						updateQuery += $", `t` = `t` + {allSeconds}";
+						updateQuery += $", `t` = `t` + {teamSeconds}";
 						break;
 					}
 				case CsTeam.CounterTerrorist:
 					{
-						updateQuery += $", `ct` = `ct` + {allSeconds}";
+						updateQuery += $", `ct` = `ct` + {teamSeconds}";
 						break;
 					}
 				default:
 					{
-						updateQuery += $", `spec` = `spec` + {allSeconds}";
+						updateQuery += $", `spec` = `spec` + {teamSeconds}";
 						break;
 					}
 			}
@@ -204,6 +205,7 @@ namespace K4ryuuPlaytimePlugin
 
 			MySql!.ExecuteNonQueryAsync(updateQuery);
 
+			clientTime[player.SteamID]["Connect"] = now;
 			clientTime[player.SteamID]["Team"] = now;
 			clientTime[player.SteamID]["Death"] = now;
 		}
