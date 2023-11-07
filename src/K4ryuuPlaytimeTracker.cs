@@ -14,9 +14,9 @@ namespace K4ryuuPlaytimePlugin
 	{
 		MySqlDb? MySql = null;
 		public override string ModuleName => "Playtime Tracker";
-		public override string ModuleVersion => "1.0.3";
+		public override string ModuleVersion => "1.0.4";
 		public override string ModuleAuthor => "K4ryuu";
-		Dictionary<uint, Dictionary<string, DateTime>> clientTime = new Dictionary<uint, Dictionary<string, DateTime>>();
+		Dictionary<ulong, Dictionary<string, DateTime>> clientTime = new Dictionary<ulong, Dictionary<string, DateTime>>();
 
 		public override void Load(bool hotReload)
 		{
@@ -66,13 +66,11 @@ namespace K4ryuuPlaytimePlugin
 
 			InsertNewClient(player);
 
-			uint playerIndex = (uint)player.UserId!;
+			if (clientTime[player.SteamID] == null)
+				clientTime[player.SteamID] = new Dictionary<string, DateTime>();
 
-			if (clientTime[playerIndex] == null)
-				clientTime[playerIndex] = new Dictionary<string, DateTime>();
-
-			clientTime[playerIndex]["Connect"] = DateTime.UtcNow;
-			clientTime[playerIndex]["Team"] = DateTime.UtcNow;
+			clientTime[player.SteamID]["Connect"] = DateTime.UtcNow;
+			clientTime[player.SteamID]["Team"] = DateTime.UtcNow;
 			return HookResult.Continue;
 		}
 
@@ -96,15 +94,19 @@ namespace K4ryuuPlaytimePlugin
 			if (player == null || !player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
-			if (clientTime.TryGetValue((uint)player.UserId!, out var playerData) && playerData != null && playerData.ContainsKey("Death"))
+			if (player.UserId != null && clientTime.ContainsKey(player.SteamID))
 			{
-				UpdatePlayerData(player, "dead", (DateTime.UtcNow - playerData["Death"]).TotalSeconds);
+				var playerData = clientTime[player.SteamID];
+				if (playerData != null && playerData.ContainsKey("Death"))
+				{
+					UpdatePlayerData(player, "dead", (DateTime.UtcNow - playerData["Death"]).TotalSeconds);
+				}
 			}
 
-			if (clientTime[(uint)player.UserId!] == null)
-				clientTime[(uint)player.UserId!] = new Dictionary<string, DateTime>();
+			if (!clientTime.ContainsKey(player.SteamID))
+				clientTime[player.SteamID] = new Dictionary<string, DateTime>();
 
-			clientTime[(uint)player.UserId!]["Death"] = DateTime.UtcNow;
+			clientTime[player.SteamID]["Death"] = DateTime.UtcNow;
 
 			return HookResult.Continue;
 		}
@@ -116,15 +118,15 @@ namespace K4ryuuPlaytimePlugin
 			if (player == null || !player.IsValid || player.IsBot)
 				return HookResult.Continue;
 
-			if (clientTime.TryGetValue((uint)player.UserId!, out var playerData) && playerData != null && playerData.ContainsKey("Death"))
+			if (clientTime.TryGetValue(player.SteamID!, out var playerData) && playerData != null && playerData.ContainsKey("Death"))
 			{
 				UpdatePlayerData(player, "alive", (DateTime.UtcNow - playerData["Death"]).TotalSeconds);
 			}
 
-			if (clientTime[(uint)player.UserId!] == null)
-				clientTime[(uint)player.UserId!] = new Dictionary<string, DateTime>();
+			if (clientTime[player.SteamID] == null)
+				clientTime[player.SteamID] = new Dictionary<string, DateTime>();
 
-			clientTime[(uint)player.UserId!]["Death"] = DateTime.UtcNow;
+			clientTime[player.SteamID]["Death"] = DateTime.UtcNow;
 
 			return HookResult.Continue;
 		}
@@ -137,11 +139,11 @@ namespace K4ryuuPlaytimePlugin
 				return HookResult.Continue;
 
 			DateTime now = DateTime.UtcNow;
-			double seconds = (now - clientTime[(uint)player.UserId!]["Team"]).TotalSeconds;
+			double seconds = (now - clientTime[player.SteamID]["Team"]).TotalSeconds;
 
 			UpdatePlayerData(player, GetFieldForTeam((CsTeam)@event.Oldteam), seconds);
 
-			clientTime[(uint)player.UserId!]["Team"] = now;
+			clientTime[player.SteamID]["Team"] = now;
 
 			return HookResult.Continue;
 		}
@@ -156,36 +158,54 @@ namespace K4ryuuPlaytimePlugin
 		}
 		public void SaveClientTime(CCSPlayerController player)
 		{
+			if (!clientTime.ContainsKey(player.SteamID))
+			{
+				// Handle the case where the key doesn't exist by adding a new entry with default values.
+				clientTime[player.SteamID] = new Dictionary<string, DateTime>();
+				clientTime[player.SteamID]["Connect"] = DateTime.UtcNow;
+				clientTime[player.SteamID]["Team"] = DateTime.UtcNow;
+				clientTime[player.SteamID]["Death"] = DateTime.UtcNow;
+
+				// Return early after handling the case.
+				return;
+			}
+
 			DateTime now = DateTime.UtcNow;
 
-			MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `all` = `all` + {(int)Math.Round((now - clientTime[(uint)player.UserId!]["Connect"]).TotalSeconds)};");
+			int allSeconds = (int)Math.Round((now - clientTime[player.SteamID]["Connect"]).TotalSeconds);
 
-			int teamSeconds = (int)Math.Round((now - clientTime[(uint)player.UserId!]["Team"]).TotalSeconds);
+			string updateQuery = $@"UPDATE `player_stats`
+                           SET `all` = `all` + {allSeconds}";
+
 			switch ((CsTeam)player.TeamNum)
 			{
 				case CsTeam.Terrorist:
 					{
-						MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `t` = `t` + {teamSeconds};");
+						updateQuery += $", `t` = `t` + {allSeconds}";
 						break;
 					}
 				case CsTeam.CounterTerrorist:
 					{
-						MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `ct` = `ct` + {teamSeconds};");
+						updateQuery += $", `ct` = `ct` + {allSeconds}";
 						break;
 					}
-				case CsTeam.Spectator:
+				default:
 					{
-						MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `spec` = `spec` + {teamSeconds};");
+						updateQuery += $", `spec` = `spec` + {allSeconds}";
 						break;
 					}
 			}
 
 			string field = player.PawnIsAlive ? "alive" : "dead";
-			MySql!.ExecuteNonQueryAsync($"UPDATE `player_stats` SET `{field}` = `{field}` + {(int)Math.Round((now - clientTime[(uint)player.UserId!]["Death"]).TotalSeconds)};");
+			int deathSeconds = (int)Math.Round((now - clientTime[player.SteamID]["Death"]).TotalSeconds);
+			updateQuery += $", `{field}` = `{field}` + {deathSeconds}";
 
-			clientTime[(uint)player.UserId!]["Team"] = now;
-			clientTime[(uint)player.UserId!]["Death"] = now;
-			clientTime[(uint)player.UserId!]["Connect"] = now;
+			updateQuery += $@" WHERE `steamid` = {player.SteamID}";
+
+			MySql!.ExecuteNonQueryAsync(updateQuery);
+
+			clientTime[player.SteamID]["Team"] = now;
+			clientTime[player.SteamID]["Death"] = now;
 		}
 
 		private void UpdatePlayerData(CCSPlayerController player, string field, double value)
