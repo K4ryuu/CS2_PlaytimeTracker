@@ -14,7 +14,7 @@ namespace K4ryuuPlaytimePlugin
 	{
 		MySqlDb? MySql = null;
 		public override string ModuleName => "Playtime Tracker";
-		public override string ModuleVersion => "1.0.1";
+		public override string ModuleVersion => "1.0.2";
 		public override string ModuleAuthor => "K4ryuu";
 		Dictionary<uint, Dictionary<string, DateTime>> clientTime = new Dictionary<uint, Dictionary<string, DateTime>>();
 
