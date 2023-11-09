@@ -138,8 +138,8 @@ The addon provides several commands and console variables (convars) to customize
 
 ## Roadmap
 
-- [ ] Web Panel
 - [ ] Top List
+- [ ] Advanced Web Panel (whenever we reach the goal at https://www.buymeacoffee.com/k4ryuu/libahozaxu)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
